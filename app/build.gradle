@@ -6,13 +6,16 @@ android {
 
     defaultConfig {
         applicationId "com.example.nachito.spear"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
-        multiDexEnabled true
+        versionCode 2001
+        // versionName "2.0.0.1 (" + gitBranch() + "@" + gitSHA() + ")"
+        versionName "2.0.0.1"
+        resValue "string", "gitBranch", gitBranch()
+        resValue "string", "gitSHA", gitSHA()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
+        buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
+        multiDexEnabled true
     }
 
     compileOptions {
@@ -52,8 +55,23 @@ android {
 
 }
 
+static def gitBranch() {
+    def branch = ""
+    def proc = "git rev-parse --abbrev-ref HEAD".execute()
+    proc.in.eachLine { line -> branch = line }
+    proc.err.eachLine { line -> println line }
+    proc.waitFor()
+    branch
+}
 
-
+static def gitSHA() {
+    def sha = ""
+    def proc = "git rev-parse --short HEAD".execute()
+    proc.in.eachLine { line -> sha = line }
+    proc.err.eachLine { line -> println line }
+    proc.waitFor()
+    sha
+}
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')

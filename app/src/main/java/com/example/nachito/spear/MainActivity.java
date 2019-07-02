@@ -3,6 +3,7 @@ package com.example.nachito.spear;
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -28,8 +29,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -72,6 +75,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -234,8 +238,6 @@ public class MainActivity extends AppCompatActivity
     List<Marker> markerListSMS = new ArrayList<>();
     Marker markerSMS;
     ScaleBarOverlay scaleBarOverlay;
-    @ViewById(R.id.joyLeft)
-    Button joyLeft;
     ItemizedIconOverlay markersOverlay2;
     android.content.res.Resources resources;
     ArrayList<GeoPoint> nullArray = new ArrayList<>();
@@ -253,8 +255,6 @@ public class MainActivity extends AppCompatActivity
     Polygon circle2;
     String planExecuting;
     ArrayList<String> errorsList;
-    @ViewById(R.id.joyRight)
-    Button joyRight;
     boolean detach;
     boolean myPosSelected;
     AppLocationService appLocationService;
@@ -263,6 +263,7 @@ public class MainActivity extends AppCompatActivity
     private Context context;
     short vehicleRpm;
     String distFinal;
+    Context mContext;
     MapEventsReceiver mReceive = new MapEventsReceiver() {
         @Override
         public boolean singleTapConfirmedHelper(GeoPoint p) {
@@ -758,9 +759,6 @@ public class MainActivity extends AppCompatActivity
                             stopTeleop.setVisibility(View.VISIBLE);
                             stopTeleop.setOnStop(teleOperation);
                             joystick.setVisibility(View.VISIBLE);
-                            joyLeft.setVisibility(View.VISIBLE);
-
-                            joyRight.setVisibility(View.VISIBLE);
 
                             PlanControl pc = new PlanControl();
                             Teleoperation teleoperationMsg = new Teleoperation();
@@ -795,7 +793,28 @@ public class MainActivity extends AppCompatActivity
             if (imc.selectedVehicle == null) {
                 warning();
             } else {
-                dive();
+                //TODO: Dive
+                String type;
+                if(isDepthSelected)
+                    type = "\nDepth: "+depth;
+                else
+                    type = "\nAltitude: "+altitude;
+
+                String speed_info;
+                if(isRPMSelected)
+                    speed_info = "\nRPM: "+speed;
+                else
+                    speed_info = "\nMeters/s: "+speed;
+
+                String info = type+"\nRadius: "+radius+"\nDuration: "+duration+speed_info;
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                alertDialogBuilder.setTitle("Dive");
+                alertDialogBuilder.setMessage("Are you sure you want to use Dive?"+info)
+                        .setCancelable(true)
+                        .setNegativeButton("Cancel", (dialog, id) -> { })
+                        .setPositiveButton("Ok", (dialog, id) -> dive());
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
             }
         });
 
@@ -803,7 +822,28 @@ public class MainActivity extends AppCompatActivity
             if (imc.selectedVehicle == null) {
                 warning();
             } else {
-                near();
+                //TODO: Come Near
+                String type;
+                if(isDepthSelected)
+                    type = "\nDepth: "+depth;
+                else
+                    type = "\nAltitude: "+altitude;
+
+                String speed_info;
+                if(isRPMSelected)
+                    speed_info = "\nRPM: "+speed;
+                else
+                    speed_info = "\nMeters/s: "+speed;
+
+                String info = type+"\nRadius: "+radius+"\nDuration: "+duration+speed_info;
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                alertDialogBuilder.setTitle("Come Near");
+                alertDialogBuilder.setMessage("Are you sure you want to use Come Near?"+info)
+                        .setCancelable(true)
+                        .setNegativeButton("Cancel", (dialog, id) -> { })
+                        .setPositiveButton("Ok", (dialog, id) -> near());
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
             }
         });
 
@@ -820,7 +860,28 @@ public class MainActivity extends AppCompatActivity
             if (imc.selectedVehicle == null) {
                 warning();
             } else {
-                keepStation();
+                //TODO: Come Near
+                String type;
+                if(isDepthSelected)
+                    type = "\nDepth: "+depth;
+                else
+                    type = "\nAltitude: "+altitude;
+
+                String speed_info;
+                if(isRPMSelected)
+                    speed_info = "\nRPM: "+speed;
+                else
+                    speed_info = "\nMeters/s: "+speed;
+
+                String info = type+"\nRadius: "+radius+"\nDuration: "+duration+speed_info;
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                alertDialogBuilder.setTitle("KeepStation");
+                alertDialogBuilder.setMessage("Are you sure you want to use KeepStation?"+info)
+                        .setCancelable(true)
+                        .setNegativeButton("Cancel", (dialog, id) -> { })
+                        .setPositiveButton("Ok", (dialog, id) -> keepStation());
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
             }
         });
 
@@ -867,30 +928,36 @@ public class MainActivity extends AppCompatActivity
     public void onBackPressed() {
         if (teleOperation != null) {
             if (TeleOperation.isTeleOpSelected) {
+                //TODO: Stop TeleOperation
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                alertDialogBuilder.setTitle("Stop TeleOperation");
+                alertDialogBuilder.setMessage("Are you sure you want to Stop TeleOperation of "+imc.getSelectedvehicle())
+                        .setCancelable(false)
+                        .setNegativeButton("Cancel", (dialog, id) -> { })
+                        .setPositiveButton("Stop", (dialog, id) -> {
+                            teleOperation.finishTeleOp();
+                            getFragmentManager().popBackStack();
+                            dive.setVisibility(View.VISIBLE);
+                            teleOperationButton.setVisibility(View.VISIBLE);
+                            startPlan.setVisibility(View.VISIBLE);
+                            comeNear.setVisibility(View.VISIBLE);
+                            keepStation.setVisibility(View.VISIBLE);
+                            stopPlan.setVisibility(View.VISIBLE);
+                            accelerate.setVisibility(View.INVISIBLE);
+                            decelerate.setVisibility(View.INVISIBLE);
+                            stopTeleop.setVisibility(View.INVISIBLE);
+                            txt2.setVisibility(View.INVISIBLE);
+                            txt4.setVisibility(View.INVISIBLE);
+                            txt5.setVisibility(View.INVISIBLE);
+                            Joystick joystick = findViewById(R.id.joystick);
+                            serviceBar.setVisibility(View.VISIBLE);
 
-
-                teleOperation.finishTeleOp();
-                getFragmentManager().popBackStack();
-                dive.setVisibility(View.VISIBLE);
-                teleOperationButton.setVisibility(View.VISIBLE);
-                startPlan.setVisibility(View.VISIBLE);
-                comeNear.setVisibility(View.VISIBLE);
-                keepStation.setVisibility(View.VISIBLE);
-                stopPlan.setVisibility(View.VISIBLE);
-                accelerate.setVisibility(View.INVISIBLE);
-                decelerate.setVisibility(View.INVISIBLE);
-                stopTeleop.setVisibility(View.INVISIBLE);
-                txt2.setVisibility(View.INVISIBLE);
-                txt4.setVisibility(View.INVISIBLE);
-                txt5.setVisibility(View.INVISIBLE);
-                Joystick joystick = findViewById(R.id.joystick);
-                serviceBar.setVisibility(View.VISIBLE);
-
-                joystick.setVisibility(View.INVISIBLE);
-                joyRight.setVisibility(View.INVISIBLE);
-                joyLeft.setVisibility(View.INVISIBLE);
-                teleOperation = null;
-                TeleOperation.isTeleOpSelected = false;
+                            joystick.setVisibility(View.INVISIBLE);
+                            teleOperation = null;
+                            TeleOperation.isTeleOpSelected = false;
+                        });
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
             } else {
 
                 getFragmentManager().popBackStack();
@@ -909,8 +976,6 @@ public class MainActivity extends AppCompatActivity
                 txt5.setVisibility(View.INVISIBLE);
                 Joystick joystick = findViewById(R.id.joystick);
                 joystick.setVisibility(View.INVISIBLE);
-                joyRight.setVisibility(View.INVISIBLE);
-                joyLeft.setVisibility(View.INVISIBLE);
                 teleOperation = null;
 
             }
@@ -919,11 +984,20 @@ public class MainActivity extends AppCompatActivity
         } else if (sendSms != null) {
             map.setMultiTouchControls(true);
         } else {
-            Intent setIntent = new Intent(Intent.ACTION_MAIN);
-
+            /*Intent setIntent = new Intent(Intent.ACTION_MAIN);
             setIntent.addCategory(Intent.CATEGORY_HOME);
             setIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(setIntent);
+            startActivity(setIntent);*/
+            Log.d("spear", "SPEAR Closed");
+            //TODO: exit spear
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+            alertDialogBuilder.setTitle("Exit SPEAR");
+            alertDialogBuilder.setMessage("Are you sure you want to close the SPEAR application?")
+                    .setCancelable(true)
+                    .setNegativeButton("Cancel", (dialog, id) -> { })
+                    .setPositiveButton("Exit", (dialog, id) -> System.exit(0));
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
         }
     }
 
@@ -973,6 +1047,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    @SuppressLint("InvalidWakeLockTag")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -988,15 +1063,12 @@ public class MainActivity extends AppCompatActivity
         if (isNetworkAvailable()) {
             map.setTileSource(TileSourceFactory.MAPNIK);
             isOfflineSelected = false;
-
-
-        } else
-
-        {
-
+        } else {
             isOfflineSelected = true;
         }
 
+        mContext = this;
+        setTitle("SPEAR [" + BuildConfig.VERSION_NAME + "]");
 
         android.app.ActionBar actionBar = getActionBar();
         if (actionBar != null) {
@@ -1059,8 +1131,6 @@ public class MainActivity extends AppCompatActivity
         decelerate.setVisibility(View.INVISIBLE);
         Joystick joystick = findViewById(R.id.joystick);
         joystick.setVisibility(View.INVISIBLE);
-        joyRight.setVisibility(View.INVISIBLE);
-        joyLeft.setVisibility(View.INVISIBLE);
         noWifiImage.setVisibility(View.INVISIBLE);
 
         txt2.setVisibility(View.INVISIBLE);
@@ -1577,7 +1647,6 @@ public class MainActivity extends AppCompatActivity
         }
 
 
-
         if (detach) {
 
             if (!myPosSelected) {
@@ -1814,10 +1883,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void near() {
-
-
         StationKeeping comeNear = new StationKeeping();
-
 
         comeNear.setLat(latitudeAndroid);
         comeNear.setLon(longitudeAndroid);
@@ -1838,11 +1904,8 @@ public class MainActivity extends AppCompatActivity
             comeNear.setZUnits(ZUnits.ALTITUDE);
         }
 
-
         String planid = "SpearComeNear-" + imc.selectedVehicle;
         startBehaviour(planid, comeNear);
-
-
     }
 
     public void startReference() {
