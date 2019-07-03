@@ -9,8 +9,8 @@ android {
         minSdkVersion 19
         targetSdkVersion 27
         versionCode 2001
-        // versionName "2.0.0.1 (" + gitBranch() + "@" + gitSHA() + ")"
-        versionName "2.0.0.1"
+        // versionName "2.0.0.2 (" + gitBranch() + "@" + gitSHA() + ")"
+        versionName "2.0.0.2"
         resValue "string", "gitBranch", gitBranch()
         resValue "string", "gitSHA", gitSHA()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
