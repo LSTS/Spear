@@ -37,6 +37,8 @@ public class AppLocationService extends Service implements LocationListener {
     Location location;
     private Context mContext;
 
+    public AppLocationService(){}
+
     public AppLocationService(Context context) {
         locationManager = (LocationManager) context
                 .getSystemService(LOCATION_SERVICE);
