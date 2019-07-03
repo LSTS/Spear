@@ -5,7 +5,7 @@ android {
     buildToolsVersion '27.0.3'
 
     defaultConfig {
-        applicationId "com.example.nachito.spear"
+        applicationId "pt.lsts.spear"
         minSdkVersion 19
         targetSdkVersion 27
         versionCode 2001
