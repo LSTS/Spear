@@ -8,7 +8,7 @@ android {
         applicationId "pt.lsts.spear"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 2001
+        versionCode 2002
         // versionName "2.0.0.2 (" + gitBranch() + "@" + gitSHA() + ")"
         versionName "2.0.0.2"
         resValue "string", "gitBranch", gitBranch()
