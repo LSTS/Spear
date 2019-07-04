@@ -105,7 +105,7 @@ public class SendSms extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case REQUEST_CODE_PERMISSION: {
                 if (grantResults.length > 0
@@ -478,16 +478,11 @@ public class SendSms extends AppCompatActivity {
     }
 
     private void sendSMS(String phoneNumber, double vel, String smsText) {
-
-
         try {
-            SmsManager smsManager = SmsManager.getDefault();
-
+            //SmsManager smsManager = SmsManager.getDefault();
             Toast.makeText(getApplicationContext(), "Number: " + phoneNumber + "  #  Text: " + smsText, Toast.LENGTH_SHORT).show();
             String SENT = "SMS_SENT";
-            PendingIntent sentPI = PendingIntent.getBroadcast(this, 0, new Intent(SENT), 0);
-
-
+            //PendingIntent sentPI = PendingIntent.getBroadcast(this, 0, new Intent(SENT), 0);
             mBroadcastTime = new BroadcastReceiver() {
 
                 @Override
@@ -518,10 +513,77 @@ public class SendSms extends AppCompatActivity {
             registerReceiver(mBroadcastTime, mTime);
 
             try {
+                Uri uri = Uri.parse("smsto:" + phoneNumber);
+                // No permisison needed
+                Intent smsIntent = new Intent(Intent.ACTION_SENDTO, uri);
+                switch (smsText) {
+                    case "sk":
+                        GeoPoint ponto = MapSMS.resultado();
+                        double latitude = ponto.getLatitude();
+                        double longitude = ponto.getLongitude();
+                        // Set the message to be sent
+                        smsText = smsText + " " + "lat=" + latitude + ";lon=" + longitude + ";speed=" + vel;
+                        smsIntent.putExtra("sms_body", smsText);
+                        //smsManager.sendTextMessage(phoneNumber, null, smsText + " " + "lat=" + latitude + ";lon=" + longitude + ";speed=" + vel, sentPI, null);
+                        sendWithSMS();
+                        finalPoint = ponto;
+                        break;
 
+                    case "go":
+                        GeoPoint ponto2 = MapSMS.resultado();
+                        double latitude2 = ponto2.getLatitude();
+                        double longitude2 = ponto2.getLongitude();
+                        smsText = smsText + " " + "lat=" + latitude2 + ";lon=" + longitude2 + ";speed=" + vel;
+                        smsIntent.putExtra("sms_body", smsText);
+                        //smsManager.sendTextMessage(phoneNumber, null, smsText + " " + "lat=" + latitude2 + ";lon=" + longitude2 + ";speed=" + vel, sentPI, null);
+                        finalPoint = ponto2;
+                        sendWithSMS();
+                        break;
 
-                if (android.os.Build.VERSION.SDK_INT > 23) {
+                    case "pos":
+                        smsIntent.putExtra("sms_body", smsText);
+                        //smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
+                        sendWithSMS();
+                        break;
 
+                    case "dive":
+                        smsIntent.putExtra("sms_body", smsText);
+                        //smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
+                        sendWithSMS();
+                        break;
+                    case "surface":
+                        smsIntent.putExtra("sms_body", smsText);
+                        //smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
+                        sendWithSMS();
+                        break;
+                    case "abort":
+                        smsIntent.putExtra("sms_body", smsText);
+                        //smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
+                        sendWithSMS();
+                        break;
+                    case "start":
+                        smsText = smsText + planName;
+                        smsIntent.putExtra("sms_body", smsText);
+                        //smsManager.sendTextMessage(phoneNumber, null, smsText + planName, sentPI, null);
+                        sendWithSMS();
+                        break;
+                    case "send":
+                        smsText = smsText + planName;
+                        smsIntent.putExtra("sms_body", smsText);
+                        //smsManager.sendTextMessage(phoneNumber, null, smsText + planName, sentPI, null);
+                        sendWithSMS();
+                        break;
+
+                }
+                // Set the message to be sent
+                smsIntent.putExtra("sms_body", smsText);
+                checked = " ";
+                selectedSMS = ".";
+                if (smsIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(smsIntent);
+                    Toast.makeText(this,"SMS to " + phoneNumber+"\n"+smsText, Toast.LENGTH_LONG).show();
+                }
+                /*if (android.os.Build.VERSION.SDK_INT > 23) {
                     try {
                         Uri uri = Uri.parse("smsto:" + phoneNumber);
                         // No permisison needed
@@ -540,20 +602,16 @@ public class SendSms extends AppCompatActivity {
                     }
                 } else {
                     switch (smsText) {
-
                         case "sk":
-
                             GeoPoint ponto = MapSMS.resultado();
                             double latitude = ponto.getLatitude();
                             double longitude = ponto.getLongitude();
                             smsManager.sendTextMessage(phoneNumber, null, smsText + " " + "lat=" + latitude + ";lon=" + longitude + ";speed=" + vel, sentPI, null);
                             sendWithSMS();
                             finalPoint = ponto;
-
                             break;
 
                         case "go":
-
                             GeoPoint ponto2 = MapSMS.resultado();
                             double latitude2 = ponto2.getLatitude();
                             double longitude2 = ponto2.getLongitude();
@@ -561,7 +619,6 @@ public class SendSms extends AppCompatActivity {
                             finalPoint = ponto2;
                             sendWithSMS();
                             break;
-
 
                         case "pos":
                             smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
@@ -590,9 +647,7 @@ public class SendSms extends AppCompatActivity {
                             break;
 
                     }
-
-
-                }
+                }*/
             } catch (Exception e) {
                 Log.i("SMS", "" + e);
             }
@@ -601,8 +656,6 @@ public class SendSms extends AppCompatActivity {
             Log.i("SMS", "" + e);
 
         }
-
-
     }
 
     public void sendWithSMS() {

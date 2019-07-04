@@ -16,11 +16,11 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
-    <!-- <uses-permission android:name="android.permission.READ_SMS" /> -->
+    <!--<uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+    <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.WRITE_SMS" />
-    <!-- <uses-permission android:name="android.permission.RECEIVE_SMS" /> -->
-    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" /> -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-feature
         android:glEsVersion="0x00020000"
@@ -37,9 +37,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBva0R32uLKe_TkKHoBFk0OH9R_EjZ_fvo" />
 
         <activity
             android:name="pt.lsts.spear.MainActivity_"
