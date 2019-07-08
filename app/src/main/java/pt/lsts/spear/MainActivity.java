@@ -15,6 +15,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -168,6 +169,7 @@ public class MainActivity extends AppCompatActivity
     static double longitudeAndroid;
     final LinkedHashMap<String, EstimatedState> estates = new LinkedHashMap<>();
     final LinkedHashMap<String, Rpm> rpmValues = new LinkedHashMap<>();
+    WifiManager wmgr;
 
     protected PowerManager.WakeLock mWakeLock;
     Marker markerFromLine;
@@ -890,6 +892,7 @@ public class MainActivity extends AppCompatActivity
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 android.Manifest.permission.ACCESS_NETWORK_STATE,
                 android.Manifest.permission.ACCESS_WIFI_STATE,
+                android.Manifest.permission.CHANGE_WIFI_STATE,
                 android.Manifest.permission.VIBRATE,
                 android.Manifest.permission.ACCESS_FINE_LOCATION,
                 android.Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -1054,6 +1057,12 @@ public class MainActivity extends AppCompatActivity
         } else {
             requestForSpecificPermission();
         }
+
+        try {
+            wmgr = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            assert wmgr != null;
+            wmgr.setWifiEnabled(true);
+        }catch(Exception ignored){}
 
         if (isNetworkAvailable()) {
             map.setTileSource(TileSourceFactory.MAPNIK);
@@ -1562,54 +1571,53 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Background
-    @Periodic
+    @Periodic(500)
     public void updateState() {
-        stateList = new ArrayList<>();
-        errorsList = new ArrayList<>();
-        allErrorsList = new HashMap<>();
+        try {
+            stateList = new ArrayList<>();
+            errorsList = new ArrayList<>();
+            allErrorsList = new HashMap<>();
 
-        vehicleStateList = imc.connectedVehicles();
-        List<String> errorsEnts = new ArrayList<>();
+            vehicleStateList = imc.connectedVehicles();
+            List<String> errorsEnts = new ArrayList<>();
 
-
-        for (VehicleState state : vehicleStateList) {
-            if (imc.selectedVehicle != null)
-                if (imc.selectedVehicle.equals(state.getSourceName())) {
-                    stateList.add(state.getOpModeStr());
-                    errorsList.add(state.getErrorEnts());
-                }
-
-            errorsEnts.add(state.getErrorEnts());
-            allErrorsList.put(state.getSourceName(), errorsEnts);
-        }
-        if (stateList.size() != 0) {
-            for (int i = 0; i < stateList.size(); i++) {
-                connectedState = stateList.toString();
-
-                if (!isStopPressed) {
-                    //Se o veiculo entrar em service mode sem ser por parar o plano
-                    if ((previous != null) && !hasEnteredServiceMode && connectedState.charAt(1) == 'S') {
-                        hasEnteredServiceMode = true;
-                        followMeOn = false;
-
-                        previous = null;
-                        areNewWaypointsFromAreaUpdated = false;
-                        isPolylineDrawn = false;
-                        otherVehiclesPositionList.clear();
-                        wasPlanChanged = false;
-                        cleanMap();
-
-
+            for (VehicleState state : vehicleStateList) {
+                if (imc.selectedVehicle != null)
+                    if (imc.selectedVehicle.equals(state.getSourceName())) {
+                        stateList.add(state.getOpModeStr());
+                        errorsList.add(state.getErrorEnts());
                     }
 
-
-                }
-
-
+                errorsEnts.add(state.getErrorEnts());
+                allErrorsList.put(state.getSourceName(), errorsEnts);
             }
+
+            if (stateList.size() != 0) {
+                for (int i = 0; i < stateList.size(); i++) {
+                    connectedState = stateList.toString();
+
+                    if (!isStopPressed) {
+                        //Se o veiculo entrar em service mode sem ser por parar o plano
+                        if ((previous != null) && !hasEnteredServiceMode && connectedState.charAt(1) == 'S') {
+                            hasEnteredServiceMode = true;
+                            followMeOn = false;
+
+                            previous = null;
+                            areNewWaypointsFromAreaUpdated = false;
+                            isPolylineDrawn = false;
+                            otherVehiclesPositionList.clear();
+                            wasPlanChanged = false;
+                            cleanMap();
+                        }
+                    }
+                }
+            }
+
+            Thread.sleep(10);
+        }catch (Exception io){
+            Log.d("spear_", ""+io);
         }
     }
-
 
     //Run task periodically - garbage collection
 
@@ -2084,9 +2092,7 @@ public class MainActivity extends AppCompatActivity
                     // When timer is finished
                     // Execute your code here
                     connectedWifi[0] = true;
-
                 }
-
                 public void onTick(long millisUntilFinished) {
                 }
             }.start();
