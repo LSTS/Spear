@@ -8,9 +8,9 @@ android {
         applicationId "pt.lsts.spear"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 2003
-        // versionName "2.0.0.3 (" + gitBranch() + "@" + gitSHA() + ")"
-        versionName "2.0.0.3"
+        versionCode 2004
+        // versionName "2.0.0.4 (" + gitBranch() + "@" + gitSHA() + ")"
+        versionName "2.0.0.4"
         resValue "string", "gitBranch", gitBranch()
         resValue "string", "gitSHA", gitSHA()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
