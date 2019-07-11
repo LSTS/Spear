@@ -1623,148 +1623,126 @@ public class MainActivity extends AppCompatActivity
 
     @SuppressLint("ClickableViewAccessibility")
     @Background
-    @Periodic(500)
+    @Periodic(250)
     public void updateMap() {
-        System.gc();
-        otherVehiclesPositionList.clear();
-        map.getOverlays().remove(mCompassOverlay);
-        map.getOverlays().clear();
-        onLocationChanged(location);
+        try {
+            System.gc();
+            otherVehiclesPositionList.clear();
+            map.getOverlays().remove(mCompassOverlay);
+            map.getOverlays().clear();
+            onLocationChanged(location);
 
-        if (context == MainActivity.this) {
-            drawCompass();
-        }
-        synchronized (estates) {
-            for (EstimatedState state : estates.values()) {
-                paintState(state);
+            if (context == MainActivity.this) {
+                drawCompass();
             }
-
-        }
-
-
-        synchronized (rpmValues) {
-            for (Rpm rpmValue : rpmValues.values()) {
-                getRpmValue(rpmValue);
-            }
-
-        }
-
-
-        if (detach) {
-
-            if (!myPosSelected) {
-                if (imc.selectedVehicle != null)
-                    mapController.setCenter(selectedVehiclePosition);
-            } else {
-                if (localizacao() != null) {
-                    mapController.setCenter(localizacao());
-
+            synchronized (estates) {
+                for (EstimatedState state : estates.values()) {
+                    paintState(state);
                 }
             }
 
-            map.setOnTouchListener((y, event) -> {
+            synchronized (rpmValues) {
+                for (Rpm rpmValue : rpmValues.values()) {
+                    getRpmValue(rpmValue);
+                }
+            }
 
-                if (event.getAction() == MotionEvent.ACTION_UP) {
-                    // if you want to fire another event
+            if (detach) {
+                if (!myPosSelected) {
+                    if (imc.selectedVehicle != null)
+                        mapController.setCenter(selectedVehiclePosition);
+                } else {
+                    if (localizacao() != null) {
+                        mapController.setCenter(localizacao());
+                    }
                 }
 
-                // Is detached mode is active all other touch handler
-                // should not be invoked, so just return true
-                return true;
-
-
-            });
-
-
-            unlock.setOnClickListener(v -> {
-                detach = false;
                 map.setOnTouchListener((y, event) -> {
-                    y.clearFocus();
-                    y.setFocusable(true);
-                    y.setClickable(true);
-
-                    return false;
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        // if you want to fire another event
+                    }
+                    // Is detached mode is active all other touch handler
+                    // should not be invoked, so just return true
+                    return true;
                 });
-                unlock.setVisibility(View.INVISIBLE);
-            });
 
-        }
-        if (isAISSelected)
-            showAIS();
-        if (isRipplesSelected)
-            showRipplesPos();
+                unlock.setOnClickListener(v -> {
+                    detach = false;
+                    map.setOnTouchListener((y, event) -> {
+                        y.clearFocus();
+                        y.setFocusable(true);
+                        y.setClickable(true);
+                        return false;
+                    });
+                    unlock.setVisibility(View.INVISIBLE);
+                });
+            }
+            if (isAISSelected)
+                showAIS();
+            if (isRipplesSelected)
+                showRipplesPos();
 
-
-        if (pointsLine.size() > 1) {
-
-            for (int i = 0; i < pointsLine.size(); i++) {
+            if (pointsLine.size() > 1) {
+                for (int i = 0; i < pointsLine.size(); i++) {
+                    markerFromLine = new Marker(map);
+                    if (pointsLine.size() > 1) {
+                        markerFromLine.setPosition(pointsLine.get(i));
+                        markerFromLine.setIcon(lineIcon);
+                        map.getOverlays().add(markerFromLine);
+                    }
+                }
+            }
+            if (pointsLine.size() == 1) {
                 markerFromLine = new Marker(map);
-                if (pointsLine.size() > 1) {
-
-                    markerFromLine.setPosition(pointsLine.get(i));
+                if (pointsLine.size() == 1) {
+                    markerFromLine.setPosition(pointsLine.get(0));
                     markerFromLine.setIcon(lineIcon);
-
                     map.getOverlays().add(markerFromLine);
                 }
             }
 
-
-        }
-        if (pointsLine.size() == 1) {
-
-
-            markerFromLine = new Marker(map);
-            if (pointsLine.size() == 1) {
-                markerFromLine.setPosition(pointsLine.get(0));
-                markerFromLine.setIcon(lineIcon);
-                map.getOverlays().add(markerFromLine);
+            if (Line.getPoly()) {
+                if (pointsLine.size() > 1) {
+                    planWaypointPolyline.setPoints(pointsLine);
+                    map.getOverlays().add(planWaypointPolyline);
+                    isPolylineDrawn = true;
+                }
             }
-        }
 
-        if (Line.getPoly()) {
-            if (pointsLine.size() > 1) {
+            if (followMeOn)
+                afterChoice();
 
-                planWaypointPolyline.setPoints(pointsLine);
-                map.getOverlays().add(planWaypointPolyline);
-                isPolylineDrawn = true;
-
+            if (circle2 != null) {
+                map.getOverlays().add(circle2);
+                map.getOverlayManager().add(circle2);
             }
-        }
-        if (followMeOn)
-            afterChoice();
-        if (circle2 != null) {
-            map.getOverlays().add(circle2);
-            map.getOverlayManager().add(circle2);
-        }
-        if (!isStopPressed && !hasEnteredServiceMode) {
-
-            if (planWaypoints.size() != 0) {
-                for (int i = 0; i < planWaypoints.size(); i++) {
-                    pointsFromPlan = new Marker(map);
-                    if (planWaypoints.size() != 0) {
-                        pointsFromPlan.setPosition(planWaypoints.get(i));
-                        pointsFromPlan.setIcon(areaIcon);
-                        map.getOverlays().add(pointsFromPlan);
+            if (!isStopPressed && !hasEnteredServiceMode) {
+                if (planWaypoints.size() != 0) {
+                    for (int i = 0; i < planWaypoints.size(); i++) {
+                        pointsFromPlan = new Marker(map);
+                        if (planWaypoints.size() != 0) {
+                            pointsFromPlan.setPosition(planWaypoints.get(i));
+                            pointsFromPlan.setIcon(areaIcon);
+                            map.getOverlays().add(pointsFromPlan);
+                        }
+                        if (planWaypointPolyline != null)
+                            map.getOverlays().add(planWaypointPolyline);
                     }
-                    if (planWaypointPolyline != null)
-                        map.getOverlays().add(planWaypointPolyline);
                 }
-
-
             }
-        }
 
-        if (!markerListSMS.isEmpty()) {
-            for (int i = 0; i < markerListSMS.size(); i++)
-                map.getOverlays().add(markerListSMS.get(i));
-        }
-        if (!areNewWaypointsFromAreaUpdated) {
-            if (connectedState != null && connectedState.charAt(1) != 'S')
-                if (Area.sendmList() != null) {
+            if (!markerListSMS.isEmpty()) {
+                for (int i = 0; i < markerListSMS.size(); i++)
+                    map.getOverlays().add(markerListSMS.get(i));
+            }
 
-                    updateWaypoints();
-                }
-
+            if (!areNewWaypointsFromAreaUpdated) {
+                if (connectedState != null && connectedState.charAt(1) != 'S')
+                    if (Area.sendmList() != null) {
+                        updateWaypoints();
+                    }
+            }
+        } catch (Exception ignored) {
         }
     }
 
